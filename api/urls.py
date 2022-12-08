@@ -1,6 +1,9 @@
-from django.urls import path, include
-from .user_auth.urls import urlpatterns as auth_staff
-from .views import CardAPIListCreate, CardAPIView, ColumnAPIVListCreate, ColumnAPIView, BordAPIListCreate, BoardAPIView
+from django.urls import path
+from .user_auth.urls import urlpatterns as auth_urls
+from .views import CardAPIListCreate, CardAPIView, ColumnAPIVListCreate, ColumnAPIView, BordAPIListCreate, BoardAPIView, \
+    CommentAPIView, MarkAPIListCreate, MarkAPIView
+
+
 
 urlpatterns = [
     # card crud
@@ -15,5 +18,9 @@ urlpatterns = [
     path('board/create-list/', BordAPIListCreate.as_view(), name='board-list-api'),
     path('board/<int:pk>', BoardAPIView.as_view(), name='board-api'),
 
+    # mark crud
+    path('mark/', MarkAPIListCreate.as_view(), name='mark-list-api'),
+    path('mark/<int:pk>', MarkAPIView.as_view(), name='mark-api'),
 
-] + auth_staff
+    path('comment/create/', CommentAPIView.as_view(), name='create-comment')
+] + auth_urls

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 from django.utils.crypto import get_random_string
-from datetime import datetime
+import datetime
 
 
 class MyUser(AbstractUser, PermissionsMixin):
@@ -28,13 +28,15 @@ class MyUser(AbstractUser, PermissionsMixin):
 class Card(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=500)
-    deadline = models.DateField()
+    deadline = models.DateField(default=datetime.date.today)
     author = models.ForeignKey(MyUser, on_delete=models.SET_NULL, null=True, related_name='one_author', blank=True)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
 
 
 class Comment(models.Model):
     author = models.ForeignKey(MyUser, on_delete=models.SET_NULL, null=True, related_name='users_comments')
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateField(default=datetime.date.today)
     text = models.TextField(max_length=1000)
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='cards_comment')
 
@@ -59,39 +61,18 @@ class Mark(models.Model):
 
 
 class MarkCard(models.Model):
-    card = models.ForeignKey(Mark, on_delete=models.CASCADE, related_name='mark_cards')
-    mark = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='card_marks')
-
-
-class Column(models.Model):
-    title = models.CharField(max_length=100, default='green')
-
-    def __str__(self):
-        return self.title
-
-
-class ColumnCard(models.Model):
-    columns = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='card_columns')
-    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='column_cards')
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='mark_cards')
+    mark = models.ForeignKey(Mark, on_delete=models.CASCADE, related_name='card_marks')
 
 
 class Board(models.Model):
     title = models.CharField(max_length=100)
-    is_archived = models.BooleanField(default=False, blank=True, null=True)
-    image = models.ImageField(upload_to='boards/', blank=True, null=True)
+    is_archived = models.BooleanField(default=False)
+    author = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='users_boards')
+    image = models.ImageField(upload_to='images/%Y/%m/%d/')
 
     def __str__(self):
         return self.title
-
-
-class BoardColumn(models.Model):
-    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='column_boards')
-    column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='board_columns')
-
-
-class Image(models.Model):
-    image = models.ImageField()
-    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="images")
 
 
 class BoardMembers(models.Model):
@@ -105,5 +86,18 @@ class FavoriteBoard(models.Model):
 
     def __str__(self):
         return self.board
+
+
+class Column(models.Model):
+    title = models.CharField(max_length=100, default='green')
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='column_boards')
+
+    def __str__(self):
+        return self.title
+
+
+class ColumnCard(models.Model):
+    columns = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='card_columns')
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='column_cards')
 
 
