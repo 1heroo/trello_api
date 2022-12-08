@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from api.models import Board, Column, Card, Mark
 from rest_framework.parsers import MultiPartParser, FormParser
 
+from api.permissions import BoardOwnerOrReadOnly, IsMemberOrBoardOwner
 from api.serializers import (CardSerializer, CardRetrieveSerializer,
                              ColumnSerializer, ColumnRetrieveSerializer,
                              BoardSerializer, BoardRetrieveSerializer,
@@ -14,17 +15,21 @@ from api.serializers import (CardSerializer, CardRetrieveSerializer,
 
 
 class CommentAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsMemberOrBoardOwner]
 
     @swagger_auto_schema(request_body=CommentSerializer)
     def post(self, request):
-        serializer = CommentSerializer(data=request.data, context={'user': request.user})
+        data = request.data
+        card = Card.objects.get(pk=data.get('card'))
+        self.check_object_permissions(request, card)
+        serializer = CommentSerializer(data=data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CardAPIListCreate(APIView):
+    permission_classes = [BoardOwnerOrReadOnly]
 
     def get(self, request):
         cards = Card.objects.all().values()
@@ -32,13 +37,18 @@ class CardAPIListCreate(APIView):
 
     @swagger_auto_schema(request_body=CardSerializer)
     def post(self, request):
-        serializer = CardSerializer(data=request.data)
+        data = request.data
+        column = Column.objects.get(pk=data.get('column'))
+        self.check_object_permissions(request, column.board)
+
+        serializer = CardSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CardAPIView(APIView):
+    permission_classes = [BoardOwnerOrReadOnly]
 
     def get(self, request, pk):
         card = Card.objects.get(pk=pk)
@@ -68,6 +78,7 @@ class CardAPIView(APIView):
 
 
 class ColumnAPIVListCreate(APIView):
+    permission_classes = [BoardOwnerOrReadOnly]
 
     def get(self, request):
         columns = Column.objects.all().values()
@@ -82,7 +93,7 @@ class ColumnAPIVListCreate(APIView):
 
 
 class ColumnAPIView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = [BoardOwnerOrReadOnly]
 
     def get(self, request, pk):
         column = Column.objects.get(pk=pk)
@@ -157,6 +168,7 @@ class BoardAPIView(APIView):
         board.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class MarkAPIView(APIView):
 
     def get(self, request, pk):
@@ -199,4 +211,6 @@ class MarkAPIListCreate(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 

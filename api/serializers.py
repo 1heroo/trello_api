@@ -10,17 +10,6 @@ class UserSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 
-class CommentSerializer(serializers.Serializer):
-    created_at = serializers.DateField(default=datetime.date.today)
-    text = serializers.CharField(max_length=1000)
-    card_id = serializers.IntegerField()
-
-    def create(self, validated_data):
-        user = self.context.get('user')
-        Comment.objects.create(author=user, **validated_data)
-        return validated_data
-
-
 class MarkRetrieveSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=100)
     colour = serializers.CharField(max_length=300)
@@ -44,59 +33,6 @@ class MarkSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.colour = validated_data.get('colour', instance.colour)
-        instance.save()
-        return instance
-
-
-class CardRetrieveSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=50, required=False)
-    description = serializers.CharField(max_length=1000, required=False)
-    deadline = serializers.DateField(read_only=True, required=False)
-    author = UserSerializer(read_only=True)
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        members = [member.user for member in instance.members.all()]
-        marks = [mark.mark for mark in instance.card_marks.all()]
-        comments = instance.cards_comment.all()
-
-        representation['members'] = UserSerializer(members, many=True, context=self.context).data
-        representation['marks'] = MarkSerializer(marks, many=True, context=self.context).data
-        representation['comments'] = CommentSerializer(comments, many=True, context=self.context).data
-
-        return representation
-
-
-class CardSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=50, required=False)
-    description = serializers.CharField(max_length=1000, required=False)
-    deadline = serializers.DateField(default=datetime.date.today, required=False)
-    author_id = serializers.IntegerField(required=False)
-
-    def create(self, validated_data):
-        Card.objects.create(**validated_data)
-        return validated_data
-
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.description = validated_data.get('description', instance.description)
-        instance.deadline = validated_data.get('deadline', instance.deadline)
-        instance.save()
-        return instance
-
-
-class ColumnSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=100, default='green', required=False)
-    board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all(), required=False)
-
-    def create(self, validated_data):
-        Column.objects.create(**validated_data)
-        return validated_data
-
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.board = validated_data.get('board', instance.board)
-
         instance.save()
         return instance
 
@@ -136,12 +72,77 @@ class BoardSerializer(serializers.Serializer):
         return instance
 
 
+class ColumnSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=100, default='green', required=False)
+    board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all(), required=False)
+
+    def create(self, validated_data):
+        Column.objects.create(**validated_data)
+        return validated_data
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.board = validated_data.get('board', instance.board)
+
+        instance.save()
+        return instance
+
+
 class ColumnRetrieveSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=100)
     board = BoardSerializer()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        cards = [card.card for card in instance.card_columns.all()]
+        cards = instance.cards.all()
         representation['cards'] = CardSerializer(cards, many=True, context=self.context).data
         return representation
+
+
+class CardRetrieveSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=50, required=False)
+    description = serializers.CharField(max_length=1000, required=False)
+    deadline = serializers.DateField(read_only=True, required=False)
+    column = ColumnSerializer()
+    author = UserSerializer(read_only=True)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        members = [member.user for member in instance.members.all()]
+        marks = [mark.mark for mark in instance.mark_cards.all()]
+        comments = instance.cards_comment.all()
+
+        representation['members'] = UserSerializer(members, many=True, context=self.context).data
+        representation['marks'] = MarkSerializer(marks, many=True, context=self.context).data
+        representation['comments'] = CommentSerializer(comments, many=True, context=self.context).data
+
+        return representation
+
+
+class CardSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=50, required=False)
+    description = serializers.CharField(max_length=1000, required=False)
+    deadline = serializers.DateField(default=datetime.date.today, required=False)
+    column = serializers.PrimaryKeyRelatedField(queryset=Column.objects.all())
+
+    def create(self, validated_data):
+        Card.objects.create(**validated_data)
+        return validated_data
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.deadline = validated_data.get('deadline', instance.deadline)
+        instance.save()
+        return instance
+
+
+class CommentSerializer(serializers.Serializer):
+    created_at = serializers.DateField(default=datetime.date.today)
+    text = serializers.CharField(max_length=1000)
+    card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
+
+    def create(self, validated_data):
+        user = self.context.get('user')
+        Comment.objects.create(author=user, **validated_data)
+        return validated_data
