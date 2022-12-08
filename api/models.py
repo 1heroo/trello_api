@@ -78,7 +78,7 @@ class ColumnCard(models.Model):
 class Board(models.Model):
     title = models.CharField(max_length=100)
     is_archived = models.BooleanField(default=False, blank=True, null=True)
-    image = models.ImageField(upload_to='boards/', blank=True)
+    image = models.ImageField(upload_to='boards/', blank=True, null=True)
 
     def __str__(self):
         return self.title

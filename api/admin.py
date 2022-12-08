@@ -1,5 +1,7 @@
-from .models import (MyUser, Comment, Card,
-    Column, Board, Mark, FavoriteBoard, Members)
+from .models import (MyUser, Comment, Card, Column,
+                     Board, Mark, FavoriteBoard, Members, MarkCard, ColumnCard,
+                     BoardColumn, Image, BoardMembers
+                     )
 from django.contrib import admin
 
 
@@ -27,6 +29,7 @@ class MarkAdmin(admin.ModelAdmin):
     list_display = ('pk', 'title')
     list_display_links = ('pk', 'title')
 
+
 # models
 admin.site.register(MyUser, MyUserAdmin)
 admin.site.register(Comment)
@@ -37,5 +40,9 @@ admin.site.register(Mark, MarkAdmin)
 admin.site.register(FavoriteBoard)
 
 # relations
-
 admin.site.register(Members)
+admin.site.register(MarkCard)
+admin.site.register(ColumnCard)
+admin.site.register(BoardColumn)
+admin.site.register(Image)
+admin.site.register(BoardMembers)
