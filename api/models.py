@@ -40,14 +40,6 @@ class BoardMembers(models.Model):
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='board_members')
 
 
-class FavoriteBoard(models.Model):
-    user = models.ForeignKey(MyUser, on_delete=models.SET_NULL, blank=True, null=True, related_name='users')
-    board = models.ForeignKey(Board, on_delete=models.SET_NULL, blank=True, null=True, related_name='boards')
-
-    def __str__(self):
-        return self.board
-
-
 class Column(models.Model):
     title = models.CharField(max_length=100, default='green')
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='column_boards')
@@ -95,3 +87,7 @@ class MarkCard(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='mark_cards')
     mark = models.ForeignKey(Mark, on_delete=models.CASCADE, related_name='card_marks')
 
+
+class FavourBoards(models.Model):
+    user = models.ForeignKey(MyUser, related_name='users_faves', on_delete=models.SET_NULL, null=True)
+    board = models.ForeignKey(Board, related_name='faves', on_delete=models.SET_NULL, null=True)
