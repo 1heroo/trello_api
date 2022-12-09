@@ -105,6 +105,8 @@ class CardRetrieveSerializer(serializers.Serializer):
     deadline = serializers.DateField(read_only=True, required=False)
     column = ColumnSerializer()
     author = UserSerializer(read_only=True)
+    created_at = serializers.DateField()
+    updated_at = serializers.DateField()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -133,6 +135,7 @@ class CardSerializer(serializers.Serializer):
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.deadline = validated_data.get('deadline', instance.deadline)
+        instance.column = validated_data.get('column', instance.column)
         instance.save()
         return instance
 

@@ -29,7 +29,7 @@ class CommentAPIView(APIView):
 
 
 class CardAPIListCreate(APIView):
-    permission_classes = [BoardOwnerOrReadOnly]
+    # permission_classes = [BoardOwnerOrReadOnly]
 
     def get(self, request):
         cards = Card.objects.all().values()
@@ -69,12 +69,12 @@ class CardAPIView(APIView):
         serializer = CardSerializer(instance=card, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
         card = Card.objects.get(pk=pk)
         card.delete()
-        Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ColumnAPIVListCreate(APIView):
@@ -114,7 +114,7 @@ class ColumnAPIView(APIView):
         serializer = ColumnSerializer(instance=column, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
         column = Column.objects.get(pk=pk)
@@ -161,7 +161,7 @@ class BoardAPIView(APIView):
         serializer = BoardSerializer(instance=board, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
         board = Board.objects.get(pk=pk)
@@ -190,7 +190,7 @@ class MarkAPIView(APIView):
         serializer = MarkSerializer(instance=mark, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
         mark = Mark.objects.get(pk=pk)
