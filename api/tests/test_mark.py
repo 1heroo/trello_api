@@ -1,5 +1,3 @@
-import factory.fuzzy
-from django.core.files.base import ContentFile
 from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -17,6 +15,7 @@ class TestMarkCRUD(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.url = reverse('mark-api', kwargs={'pk': self.mark.pk})
         self.list_creation_url = reverse('mark-list-api')
+        self.response_time = .1
 
     def test_get_list_board(self):
         start = perf_counter()
@@ -25,7 +24,7 @@ class TestMarkCRUD(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(type(response.data.get('data')), list)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
 
     def test_get_mark(self):
         expected = 3
@@ -35,7 +34,7 @@ class TestMarkCRUD(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
 
     def test_create_column(self):
         expected = 2
@@ -50,7 +49,7 @@ class TestMarkCRUD(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data, new_mark)
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
 
     def test_full_update(self):
         expected = 2
@@ -61,11 +60,10 @@ class TestMarkCRUD(APITestCase):
         response = self.client.put(self.url, data=new_mark)
         end = perf_counter()
 
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, new_mark)
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
 
     def test_partial_update(self):
         expected = 1
@@ -78,7 +76,7 @@ class TestMarkCRUD(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('title'), new_title.get('title'))
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
 
     def test_delete(self):
         start = perf_counter()
@@ -86,4 +84,4 @@ class TestMarkCRUD(APITestCase):
         end = perf_counter()
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)

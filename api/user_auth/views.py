@@ -45,11 +45,11 @@ class ActivationAPIView(APIView):
     def get(self, request, code):
         user = MyUser.objects.filter(code=code)[0]
         if not user:
-            return Response({'message': 'Invalid code or user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Invalid code or user does not exist'}, status=status.HTTP_404_NOT_FOUND)
         user.is_active = True
         user.code = ''
         user.save()
-        return Response({'message': 'Account successfully activated'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Account successfully activated'}, status=status.HTTP_200_OK)
 
 
 class ResetPasswordAPIView(APIView):
@@ -58,7 +58,7 @@ class ResetPasswordAPIView(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response({'Message': 'successfully succeed'})
+        return Response({'Message': 'successfully succeed'}, status=status.HTTP_200_OK)
 
 
 class PasswordTokenVerifyAPIView(APIView):
@@ -68,7 +68,7 @@ class PasswordTokenVerifyAPIView(APIView):
             pk = smart_str(urlsafe_base64_decode(uidb64))
             user = MyUser.objects.filter(pk=pk)[0]
             if not user:
-                return Response({'Message': f'User not found with id {pk}'}, status.HTTP_400_BAD_REQUEST)
+                return Response({'Message': f'User not found with id {pk}'}, status.HTTP_404_NOT_FOUND)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
                 return Response({'Message': 'This token is not valid'}, status=status.HTTP_400_BAD_REQUEST)
@@ -96,11 +96,11 @@ class ResetPasswordCompleteAPIView(APIView):
 
             user = MyUser.objects.filter(pk=pk)[0]
 
+            if not user:
+                return Response({'Message': f'User not found with id {pk}'}, status.HTTP_404_NOT_FOUND)
+
             if not PasswordResetTokenGenerator().check_token(user, token):
                 return Response({'Message': 'This token is not valid'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if not user:
-                return Response({'Message': f'User not found with id {pk}'}, status.HTTP_400_BAD_REQUEST)
 
             serializer = ResetPasswordCompleteSerializer(data=data, instance=user)
             serializer.is_valid()

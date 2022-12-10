@@ -1,8 +1,9 @@
-from django.db.models import Q
+from abc import ABC
+
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 
-from api.models import BoardMembers, Members, Card, FavourBoards
+from api.models import BoardMembers, Members, Card, FavouriteBoards
 from api.models import Board, MyUser
 from api.utils import send_invitation_email
 
@@ -19,11 +20,10 @@ class InviteToBoardSerializer(serializers.Serializer):
             BoardMembers.objects.create(user=user, board=board)
         except ObjectDoesNotExist:
             send_invitation_email(email, board)
-
         return validated_data
 
 
-class InviteToCardSerializer(serializers.Serializer):
+class AddToCardSerializer(serializers.Serializer):
     email = serializers.EmailField()
     card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
 
@@ -34,17 +34,17 @@ class InviteToCardSerializer(serializers.Serializer):
         return validated_data
 
 
-class FavesSerializer(serializers.Serializer):
+class FavouriteBoardSerializer(serializers.Serializer):
     board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
 
     def create(self, validated_data):
         user = self.context.get('user')
-        FavourBoards.objects.create(user=user,
+        FavouriteBoards.objects.create(user=user,
                                     board=validated_data.get('board'))
         return validated_data
 
 
-class RemoveFaveSerializer(serializers.Serializer):
+class RemoveFavouriteSerializer(serializers.Serializer):
     board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
 
     def save(self, data):

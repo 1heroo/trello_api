@@ -1,6 +1,6 @@
 from .models import (MyUser, Comment, Card, Column,
                      Board, Mark, Members,
-                     MarkCard, BoardMembers, FavourBoards)
+                     MarkCard, BoardMembers, FavouriteBoards)
 from django.contrib import admin
 
 
@@ -36,7 +36,7 @@ admin.site.register(Card, ItemAdmin)
 admin.site.register(Column, ColumnAdmin)
 admin.site.register(Board, BoardAdmin)
 admin.site.register(Mark, MarkAdmin)
-admin.site.register(FavourBoards)
+admin.site.register(FavouriteBoards)
 
 # relations
 admin.site.register(Members)

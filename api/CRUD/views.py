@@ -19,10 +19,9 @@ class CommentAPIView(APIView):
 
     @swagger_auto_schema(request_body=CommentSerializer)
     def post(self, request):
-        data = request.data
-        card = Card.objects.get(pk=data.get('card'))
+        card = Card.objects.get(pk=request.data.get('card'))
         self.check_object_permissions(request, card)
-        serializer = CommentSerializer(data=data, context={'user': request.user})
+        serializer = CommentSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -37,11 +36,10 @@ class CardAPIListCreate(APIView):
 
     @swagger_auto_schema(request_body=CardSerializer)
     def post(self, request):
-        data = request.data
-        column = Column.objects.get(pk=data.get('column'))
+        column = Column.objects.get(pk=request.data.get('column'))
         self.check_object_permissions(request, column.board)
 
-        serializer = CardSerializer(data=data)
+        serializer = CardSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -50,14 +48,17 @@ class CardAPIListCreate(APIView):
 class CardAPIView(APIView):
     permission_classes = [BoardOwnerOrReadOnly]
 
+    def get_object(self, pk):
+        return Card.objects.get(pk=pk)
+
     def get(self, request, pk):
-        card = Card.objects.get(pk=pk)
+        card = self.get_object(pk=pk)
         serializer = CardRetrieveSerializer(card)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=CardSerializer)
     def put(self, request, pk):
-        card = Card.objects.get(pk=pk)
+        card = self.get_object(pk=pk)
         serializer = CardSerializer(instance=card, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -65,14 +66,14 @@ class CardAPIView(APIView):
 
     @swagger_auto_schema(request_body=CardSerializer)
     def patch(self, request, pk):
-        card = Card.objects.get(pk=pk)
+        card = self.get_object(pk=pk)
         serializer = CardSerializer(instance=card, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
-        card = Card.objects.get(pk=pk)
+        card = self.get_object(pk=pk)
         card.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -95,14 +96,17 @@ class ColumnAPIVListCreate(APIView):
 class ColumnAPIView(APIView):
     permission_classes = [BoardOwnerOrReadOnly]
 
+    def get_object(self, pk):
+        return Column.objects.get(pk=pk)
+
     def get(self, request, pk):
-        column = Column.objects.get(pk=pk)
+        column = self.get_object(pk=pk)
         serializer = ColumnRetrieveSerializer(column)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=ColumnSerializer)
     def put(self, request, pk):
-        column = Column.objects.get(pk=pk)
+        column = self.get_object(pk=pk)
         serializer = ColumnSerializer(instance=column, data=request.data, partial=False)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -110,14 +114,14 @@ class ColumnAPIView(APIView):
 
     @swagger_auto_schema(request_body=ColumnSerializer)
     def patch(self, request, pk):
-        column = Column.objects.get(pk=pk)
+        column = self.get_object(pk=pk)
         serializer = ColumnSerializer(instance=column, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
-        column = Column.objects.get(pk=pk)
+        column = self.get_object(pk=pk)
         column.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -142,14 +146,17 @@ class BoardAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = (FormParser, MultiPartParser)
 
+    def get_object(self, pk):
+        return Board.objects.get(pk=pk)
+
     def get(self, request, pk):
-        board = Board.objects.get(pk=pk)
+        board = self.get_object(pk=pk)
         serializer = BoardRetrieveSerializer(board)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=BoardSerializer)
     def put(self, request, pk):
-        board = Board.objects.get(pk=pk)
+        board = self.get_object(pk=pk)
         serializer = BoardSerializer(instance=board, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -157,28 +164,31 @@ class BoardAPIView(APIView):
 
     @swagger_auto_schema(request_body=BoardSerializer)
     def patch(self, request, pk):
-        board = Board.objects.get(pk=pk)
+        board = self.get_object(pk=pk)
         serializer = BoardSerializer(instance=board, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
-        board = Board.objects.get(pk=pk)
+        board = self.get_object(pk=pk)
         board.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class MarkAPIView(APIView):
 
+    def get_object(self, pk):
+        return Mark.objects.get(pk=pk)
+
     def get(self, request, pk):
-        mark = Mark.objects.get(pk=pk)
+        mark = self.get_object(pk=pk)
         serializer = MarkRetrieveSerializer(mark)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=MarkSerializer)
     def put(self, request, pk):
-        mark = Mark.objects.get(pk=pk)
+        mark = self.get_object(pk=pk)
         serializer = MarkSerializer(instance=mark, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -186,14 +196,14 @@ class MarkAPIView(APIView):
 
     @swagger_auto_schema(request_body=MarkSerializer)
     def patch(self, request, pk):
-        mark = Mark.objects.get(pk=pk)
+        mark = self.get_object(pk=pk)
         serializer = MarkSerializer(instance=mark, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(request.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
-        mark = Mark.objects.get(pk=pk)
+        mark = self.get_object(pk=pk)
         mark.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

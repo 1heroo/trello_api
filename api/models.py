@@ -88,6 +88,6 @@ class MarkCard(models.Model):
     mark = models.ForeignKey(Mark, on_delete=models.CASCADE, related_name='card_marks')
 
 
-class FavourBoards(models.Model):
+class FavouriteBoards(models.Model):
     user = models.ForeignKey(MyUser, related_name='users_faves', on_delete=models.SET_NULL, null=True)
     board = models.ForeignKey(Board, related_name='faves', on_delete=models.SET_NULL, null=True)

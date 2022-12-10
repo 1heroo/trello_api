@@ -3,65 +3,73 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .permissions import BoardOwnerOrReadOnly
 from api.CRUD.serializers import BoardSerializer
 from api.models import Board
-from api.serializers import InviteToBoardSerializer, InviteToCardSerializer, FavesSerializer, RemoveFaveSerializer, \
-    ArchivingSerializer
+from api.serializers import (InviteToBoardSerializer,
+                             AddToCardSerializer, FavouriteBoardSerializer,
+                             RemoveFavouriteSerializer, ArchivingSerializer)
 
 
 class InviteMemberToBoardView(APIView):
     @swagger_auto_schema(request_body=InviteToBoardSerializer)
     def post(self, request):
-        serializer = InviteToBoardSerializer(data=request.data, context={'user': request.user})
+        serializer = InviteToBoardSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class InviteToCard(APIView):
+class AddToMemberCard(APIView):
 
     @swagger_auto_schema(request_body=InviteToCardSerializer)
     def post(self, request):
-        serializer = InviteToCardSerializer(data=request.data)
+        serializer = AddToCardSerializer(data=request.data)
         serializer.is_valid()
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AddToFaves(APIView):
+class FavouriteBoardsAPIView(APIView):
 
-    @swagger_auto_schema(request_body=FavesSerializer)
+    def get(self, request):
+        boards = [board.board for board in request.user.users_faves.all()]
+        serializer = BoardSerializer(boards, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=FavouriteBoardSerializer)
     def post(self, request):
-        serializer = FavesSerializer(data=request.data, context={'user': request.user})
+        serializer = FavouriteBoardSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema(request_body=RemoveFaveSerializer)
+    @swagger_auto_schema(request_body=RemoveFavouriteSerializer)
     def delete(self, request):
-        serialize = RemoveFaveSerializer(context={'user': request.user})
+        serialize = RemoveFavouriteSerializer(context={'user': request.user})
         serialize.save(data=request.data)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ArchivingView(APIView):
+    permission_classes = [BoardOwnerOrReadOnly]
 
     @swagger_auto_schema(request_body=ArchivingSerializer)
     def post(self, request):
         board = Board.objects.get(pk=request.data['board'])
-        if board.author == request.user:
-            serializer = BoardSerializer(instance=board, data={'is_archived': True})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response('Only board author can archive board', status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request=request, obj=board)
+
+        serializer = BoardSerializer(instance=board, data={'is_archived': True})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=ArchivingSerializer)
     def patch(self, request):
         board = Board.objects.get(pk=request.data['board'])
-        if board.author == request.user:
-            serializer = BoardSerializer(instance=board, data={'is_archived': False})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response('Only board author can archive board', status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request=request, obj=board)
+
+        serializer = BoardSerializer(instance=board, data={'is_archived': False})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

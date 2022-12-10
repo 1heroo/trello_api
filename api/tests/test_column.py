@@ -1,4 +1,3 @@
-import factory.fuzzy
 from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -17,6 +16,7 @@ class TestColumnCRUD(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.url = reverse('column-api', kwargs={'pk': self.column.pk})
         self.list_creation_url = reverse('column-list-api')
+        self.response_time = .1
 
     def test_get_list_board(self):
         start = perf_counter()
@@ -25,7 +25,7 @@ class TestColumnCRUD(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(type(response.data.get('data')), list)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
 
     def test_get_column(self):
         expected = 3
@@ -36,7 +36,7 @@ class TestColumnCRUD(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end-start, 0.2)
+        self.assertLess(end-start, self.response_time)
 
     def test_create_column(self):
         expected = 2
@@ -50,7 +50,7 @@ class TestColumnCRUD(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data, new_column)
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end-start, 0.2)
+        self.assertLess(end-start, self.response_time)
 
     def test_fill_update(self):
         expected = 2
@@ -64,7 +64,7 @@ class TestColumnCRUD(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, new_column)
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end-start, 0.2)
+        self.assertLess(end-start, self.response_time)
 
     def test_partial_update(self):
         expected = 1
@@ -77,7 +77,7 @@ class TestColumnCRUD(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('title'), new_title.get('title'))
         self.assertEqual(len(response.data), expected)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
 
     def test_delete(self):
         start = perf_counter()
@@ -85,4 +85,4 @@ class TestColumnCRUD(APITestCase):
         end = perf_counter()
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertLess(end - start, 0.2)
+        self.assertLess(end - start, self.response_time)
