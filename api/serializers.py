@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 
-from api.models import BoardMembers, Members, Card, FavouriteBoards
+from api.models import BoardMembers, Members, Card, FavouriteBoards, Mark, MarkCard
 from api.models import Board, MyUser
 from api.utils import send_invitation_email
 
@@ -26,9 +26,9 @@ class AddToCardSerializer(serializers.Serializer):
     card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
 
     def create(self, validated_data):
-        board = validated_data.get('board')
+        card = validated_data.get('card')
         user = MyUser.objects.get(email=validated_data.get('email'))
-        Members.objects.create(user=user, board=board)
+        Members.objects.create(user=user, card=card)
         return validated_data
 
 
@@ -49,11 +49,32 @@ class RemoveFavouriteSerializer(serializers.Serializer):
         board = data.get('board')
         user = self.context.get('user')
 
-        favour_board = user.users_faves.filter(board=board)
-        favour_board.delete()
+        user.users_faves.filter(board=board).delete()
         return data
 
 
 class ArchivingSerializer(serializers.Serializer):
     # uses only for swagger schema
     board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
+
+
+class MarkACardSerializer(serializers.Serializer):
+    mark = serializers.PrimaryKeyRelatedField(queryset=Mark.objects.all())
+    card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
+
+    def create(self, validated_data):
+        mark = validated_data.get('mark')
+        card = validated_data.get('card')
+        MarkCard.objects.create(mark=mark, card=card)
+        return validated_data
+
+
+class UnMarkACardSerializer(serializers.Serializer):
+    mark = serializers.PrimaryKeyRelatedField(queryset=Mark.objects.all())
+    card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
+
+    def save(self, data):
+        mark = data.get('mark')
+        card = data.get('card')
+        MarkCard.objects.get(mark=mark, card=card).delete()
+        return data

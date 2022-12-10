@@ -100,7 +100,6 @@ class ColumnRetrieveSerializer(serializers.Serializer):
 
 class FileSerializer(serializers.Serializer):
     file = serializers.FileField(use_url=True)
-    # card = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
 
 
 class CardRetrieveSerializer(serializers.Serializer):

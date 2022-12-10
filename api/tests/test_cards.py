@@ -27,7 +27,7 @@ class TestCardCRUD(APITestCase):
         self.assertLess(end - start, self.response_time)
 
     def test_get_card(self):
-        expected = 9
+        expected = 10
 
         start = perf_counter()
         response = self.client.get(self.url)
