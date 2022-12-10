@@ -1,10 +1,7 @@
 from rest_framework import permissions
 
-from api.models import BoardMembers, Members
-
 
 class BoardOwnerOrReadOnly(permissions.BasePermission):
-    message = 'only board owners can create new card'
 
     def has_permission(self, request, view):
         return request.user.is_authenticated \
@@ -15,7 +12,6 @@ class BoardOwnerOrReadOnly(permissions.BasePermission):
 
 
 class IsMemberOrBoardOwner(permissions.BasePermission):
-    message = 'only board owner or card members can add comments'
 
     def has_object_permission(self, request, view, obj):
         user = request.user

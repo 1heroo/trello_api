@@ -1,5 +1,3 @@
-from abc import ABC
-
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -27,7 +25,7 @@ class AddToCardSerializer(serializers.Serializer):
     email = serializers.EmailField()
     card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
 
-    def craete(self, validated_data):
+    def create(self, validated_data):
         board = validated_data.get('board')
         user = MyUser.objects.get(email=validated_data.get('email'))
         Members.objects.create(user=user, board=board)
@@ -40,7 +38,7 @@ class FavouriteBoardSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = self.context.get('user')
         FavouriteBoards.objects.create(user=user,
-                                    board=validated_data.get('board'))
+                                       board=validated_data.get('board'))
         return validated_data
 
 
@@ -59,4 +57,3 @@ class RemoveFavouriteSerializer(serializers.Serializer):
 class ArchivingSerializer(serializers.Serializer):
     # uses only for swagger schema
     board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
-

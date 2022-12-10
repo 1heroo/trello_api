@@ -1,5 +1,5 @@
 from .models import (MyUser, Comment, Card, Column,
-                     Board, Mark, Members,
+                     Board, Mark, Members, File,
                      MarkCard, BoardMembers, FavouriteBoards)
 from django.contrib import admin
 
@@ -42,3 +42,4 @@ admin.site.register(FavouriteBoards)
 admin.site.register(Members)
 admin.site.register(MarkCard)
 admin.site.register(BoardMembers)
+admin.site.register(File)

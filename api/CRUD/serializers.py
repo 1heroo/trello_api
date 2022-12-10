@@ -1,7 +1,6 @@
 import datetime
-from time import timezone
 from rest_framework import serializers
-from api.models import Comment, Column, Mark, MyUser, Board, Card, Members
+from api.models import Comment, Column, Mark, Board, Card, File
 
 
 class UserSerializer(serializers.Serializer):
@@ -99,6 +98,11 @@ class ColumnRetrieveSerializer(serializers.Serializer):
         return representation
 
 
+class FileSerializer(serializers.Serializer):
+    file = serializers.FileField(use_url=True)
+    # card = serializers.PrimaryKeyRelatedField(queryset=File.objects.all())
+
+
 class CardRetrieveSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50, required=False)
     description = serializers.CharField(max_length=1000, required=False)
@@ -114,6 +118,7 @@ class CardRetrieveSerializer(serializers.Serializer):
         marks = [mark.mark for mark in instance.mark_cards.all()]
         comments = instance.cards_comment.all()
 
+        representation['files'] = FileSerializer(instance.files.all(), many=True, context=self.context).data
         representation['members'] = UserSerializer(members, many=True, context=self.context).data
         representation['marks'] = MarkSerializer(marks, many=True, context=self.context).data
         representation['comments'] = CommentSerializer(comments, many=True, context=self.context).data
@@ -125,10 +130,17 @@ class CardSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50, required=False)
     description = serializers.CharField(max_length=1000, required=False)
     deadline = serializers.DateField(default=datetime.date.today, required=False)
+    file = serializers.FileField(required=False)
     column = serializers.PrimaryKeyRelatedField(queryset=Column.objects.all())
 
     def create(self, validated_data):
-        Card.objects.create(**validated_data)
+        file = None
+        if validated_data.get('file'):
+            file = validated_data.pop('file')
+        card = Card.objects.create(**validated_data)
+
+        if file:
+            File.objects.create(file=file, card=card)
         return validated_data
 
     def update(self, instance, validated_data):

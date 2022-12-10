@@ -1,17 +1,18 @@
+from django.forms import model_to_dict
 from django.shortcuts import render
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from api.models import Board, Column, Card, Mark
+from api.models import Board, Column, Card, Mark, MyUser
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from api.permissions import BoardOwnerOrReadOnly, IsMemberOrBoardOwner
 from .serializers import (CardSerializer, CardRetrieveSerializer,
-                             ColumnSerializer, ColumnRetrieveSerializer,
-                             BoardSerializer, BoardRetrieveSerializer,
-                             CommentSerializer, MarkSerializer, MarkRetrieveSerializer)
+                          ColumnSerializer, ColumnRetrieveSerializer,
+                          BoardSerializer, BoardRetrieveSerializer,
+                          CommentSerializer, MarkSerializer, MarkRetrieveSerializer)
 
 
 class CommentAPIView(APIView):
@@ -29,6 +30,7 @@ class CommentAPIView(APIView):
 
 class CardAPIListCreate(APIView):
     # permission_classes = [BoardOwnerOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         cards = Card.objects.all().values()
@@ -221,6 +223,5 @@ class MarkAPIListCreate(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
 

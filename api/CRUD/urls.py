@@ -1,7 +1,8 @@
-from django.urls import path
+from django.urls import path, re_path
 
-from .views import CardAPIListCreate, CardAPIView, ColumnAPIVListCreate, ColumnAPIView, BordAPIListCreate, BoardAPIView, \
-    CommentAPIView, MarkAPIListCreate, MarkAPIView
+from .views import (CardAPIListCreate, CardAPIView, ColumnAPIVListCreate, ColumnAPIView,
+                    BordAPIListCreate, BoardAPIView, CommentAPIView, MarkAPIListCreate,
+                    MarkAPIView)
 
 
 urlpatterns = [
@@ -21,5 +22,5 @@ urlpatterns = [
     path('mark/', MarkAPIListCreate.as_view(), name='mark-list-api'),
     path('mark/<int:pk>', MarkAPIView.as_view(), name='mark-api'),
 
-    path('comment/create/', CommentAPIView.as_view(), name='create-comment')
+    path('comment/create/', CommentAPIView.as_view(), name='create-comment'),
 ]

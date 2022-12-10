@@ -57,6 +57,11 @@ class Card(models.Model):
     updated_at = models.DateField(auto_now=True)
 
 
+class File(models.Model):
+    file = models.FileField(upload_to='uploads/')
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='files')
+
+
 class Comment(models.Model):
     author = models.ForeignKey(MyUser, on_delete=models.SET_NULL, null=True, related_name='users_comments')
     created_at = models.DateField(default=datetime.date.today)

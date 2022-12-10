@@ -19,6 +19,3 @@ def send_invitation_email(email, board):
         recipient_list=[email],
         fail_silently=False
     )
-
-
-

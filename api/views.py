@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from .permissions import BoardOwnerOrReadOnly
 from api.CRUD.serializers import BoardSerializer
-from api.models import Board
+from api.models import Board, MyUser, Mark
 from api.serializers import (InviteToBoardSerializer,
                              AddToCardSerializer, FavouriteBoardSerializer,
                              RemoveFavouriteSerializer, ArchivingSerializer)
@@ -22,7 +22,7 @@ class InviteMemberToBoardView(APIView):
 
 class AddToMemberCard(APIView):
 
-    @swagger_auto_schema(request_body=InviteToCardSerializer)
+    @swagger_auto_schema(request_body=AddToCardSerializer)
     def post(self, request):
         serializer = AddToCardSerializer(data=request.data)
         serializer.is_valid()
@@ -73,3 +73,12 @@ class ArchivingView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SearchView(APIView):
+    def get(self, request, query):
+        queryset = MyUser.objects.filter(first_name__icontains=query) or \
+                   MyUser.objects.filter(last_name__icontains=query) or \
+                   Mark.objects.filter(title__icontains=query)
+
+        return Response(list(queryset.values()), status=status.HTTP_200_OK)
